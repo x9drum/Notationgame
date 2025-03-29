@@ -103,8 +103,13 @@
 </head>
 <body>
 <img id="title-image" src="images/title.png" alt="鼓譜 Notation 快問快答" style="max-width: 90%; height: auto; margin-bottom: 20px;" />
+
   <div id="start-screen">
-    <button onclick="startGame()">開始遊戲</button>
+    <h2>請選擇難度：</h2>
+    <button onclick="setDifficulty('easy')">簡單（不限時間）</button>
+    <button onclick="setDifficulty('normal')">中級（10 秒）</button>
+    <button onclick="setDifficulty('hard')">高級（5 秒）</button>
+    <button onclick="setDifficulty('hell')">甘那鬼（3 秒）</button>
   </div>
 
   <div id="game-screen" class="hidden">
@@ -142,13 +147,30 @@
       return array;
     }
 
-    function startGame() {
+
+ function setDifficulty(level) {
+      if (level === 'easy') timePerQuestion = null;
+      if (level === 'normal') timePerQuestion = 10;
+      if (level === 'hard') timePerQuestion = 5;
+      if (level === 'hell') timePerQuestion = 3;
+      startGame();
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+	
+	
+     function startGame() {
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('game-screen').classList.remove('hidden');
       document.getElementById('question-img').classList.add('hidden');
       document.getElementById('countdown').classList.add('hidden');
-	  document.getElementById('title-image').classList.add('hidden');
-
+      document.getElementById('title-image').classList.add('hidden');
 
       questions = [];
       for (let i = 0; i < 10; i++) {
@@ -161,7 +183,7 @@
       nextQuestion();
     }
 
-    function nextQuestion() {
+ function nextQuestion() {
       if (current >= questions.length) return showComplete();
 
       const question = questions[current];
@@ -170,7 +192,6 @@
       const questionNumber = document.getElementById('question-number');
 
       questionImg.classList.remove('hidden');
-      countdown.classList.remove('hidden');
       questionImg.src = `images/notation/${question}.png`;
       questionNumber.innerText = `第 ${current + 1} / 10 題`;
       document.getElementById('options').innerHTML = '';
@@ -179,28 +200,32 @@
 
       options.forEach(option => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn fade';
+        btn.className = 'option-btn';
         btn.innerHTML = `<img class="option-img" src="images/answers/${option}A.png" alt="${option}" />`;
         btn.onclick = () => {
           clearInterval(timerInterval);
           answer(option);
         };
         document.getElementById('options').appendChild(btn);
-        setTimeout(() => btn.classList.add('in'), 1000);
       });
 
-      let timeLeft = 5;
-      countdown.textContent = timeLeft;
-
-      timerInterval = setInterval(() => {
-        timeLeft--;
+      if (timePerQuestion) {
+        let timeLeft = timePerQuestion;
+        countdown.classList.remove('hidden');
         countdown.textContent = timeLeft;
 
-        if (timeLeft === 0) {
-          clearInterval(timerInterval);
-          answer(null);
-        }
-      }, 1000);
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          countdown.textContent = timeLeft;
+
+          if (timeLeft === 0) {
+            clearInterval(timerInterval);
+            answer(null);
+          }
+        }, 1000);
+      } else {
+        countdown.classList.add('hidden');
+      }
     }
 
     function answer(choice) {
