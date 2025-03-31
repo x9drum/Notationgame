@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>顏色手眼反應挑戰</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
+  <style>
+    body {
+	letter-spacing: 0.33em;
+     font-family: 'Noto Sans TC', sans-serif;
+      background: url("images/rl_background.png") no-repeat center center fixed;
+  background-size: cover;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+    h1 {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: rgba(0, 187, 0, 0.5); /* #00bb00 + 透明度 */
+  border-radius: 8px;
+  color: black;
+}
+
+    #game-area {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+      margin-top: 20px;
+    }
+    #main-image {
+      width: 160px;
+      height: 160px;
+      object-fit: contain;
+      transition: transform 0.3s, opacity 0.3s;
+      background-color: transparent;
+      border: none;
+    }
+    .shake {
+      animation: shake 0.5s;
+    }
+    .flash {
+      animation: flash 0.3s;
+    }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+      100% { transform: translateX(0); }
+    }
+    @keyframes flash {
+      0% { opacity: 0; transform: scale(0.6); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .side-button {
+      width: 120px;
+      height: 120px;
+      padding: 0;
+      background: none;
+      border: none;
+      transition: transform 0.1s;
+    }
+    .side-button:active {
+      transform: scale(0.95);
+    }
+    .side-button img {
+      width: 100%;
+      height: auto;
+    }
+    #timer {
+      font-size: 24px;
+      margin: 10px;
+    }
+    #score-live {
+      font-size: 18px;
+      margin-top: 20px;
+      color: #333;
+      display: none;
+    }
+    #result-screen {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+#start-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  outline: none;
+}
+
+#start-btn img {
+  width: 200px;
+  height: 100px;
+  object-fit: contain;
+  display: block;
+}
+
+#start-btn img {
+  width: 200px;
+  height: 100px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+#start-btn img:hover {
+  transform: scale(1.05);
+  filter: brightness(1.2);
+}
+
+	#wrong-feedback {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  opacity: 0;
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  z-index: 20;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#wrong-feedback.show {
+  opacity: 0.3;
+  transform: translate(-50%, -50%) scale(1.2);
+  animation: shakeWrong 0.4s ease;
+}
+
+@keyframes shakeWrong {
+  0% { transform: translate(-50%, -50%) scale(1.2); }
+  25% { transform: translate(calc(-50% - 5px), -50%) scale(1.2); }
+  50% { transform: translate(calc(-50% + 5px), -50%) scale(1.2); }
+  75% { transform: translate(calc(-50% - 5px), -50%) scale(1.2); }
+  100% { transform: translate(-50%, -50%) scale(1.2); }
+}
+
+#medal {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+#medal.show {
+  opacity: 1;
+  transform: scale(1.2);
+  animation: bounceMedal 0.6s ease;
+}
+
+@keyframes bounceMedal {
+  0% { transform: scale(1.2) translateY(0); }
+  30% { transform: scale(1.1) translateY(-10px); }
+  60% { transform: scale(1.15) translateY(5px); }
+  100% { transform: scale(1.2) translateY(0); }
+}
+
+#back-button {
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 18px;
+  background-color: #ffffffcc;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #333;
+  transition: transform 0.2s;
+}
+#back-button:hover {
+  transform: scale(1.05);
+  background-color: #fff;
+}
+  </style>
+</head>
+<body>
+  <h1>顏色手眼反應挑戰</h1>
+  <button id="start-btn"><img src="images/start.png" alt="Start"></button>
+  <div id="timer"></div>
+
+  <div id="game-area">
+    <img id="wrong-feedback" src="images/wrong.png" alt="錯誤提示">
+    <button id="left-click" class="side-button" style="display:none">
+      <img src="images/Lclick.png" alt="Left">
+    </button>
+
+    <img id="main-image" src="" style="display:none">
+
+    <button id="right-click" class="side-button" style="display:none">
+      <img src="images/Rclick.png" alt="Right">
+    </button>
+  </div>
+
+  <div id="score-live">正確題數：0</div>
+
+  <div id="result-screen">
+  <h2 id="score"></h2>
+  <img id="medal" src="" alt="Medal" width="150">
+  <br><br>
+  <button id="back-button" onclick="location.href='index.html'">🔙 返回選單</button>
+</div>
+
+  <script>
+    let score = 0;
+    let timeLeft = 30;
+    let timer;
+    let canClick = true;
+
+    const startButton = document.getElementById("start-btn");
+    const mainImage = document.getElementById("main-image");
+    const leftButton = document.getElementById("left-click");
+    const rightButton = document.getElementById("right-click");
+    const timerDisplay = document.getElementById("timer");
+    const resultScreen = document.getElementById("result-screen");
+    const medalImage = document.getElementById("medal");
+    const scoreDisplay = document.getElementById("score");
+    const scoreLive = document.getElementById("score-live");
+
+    startButton.onclick = () => {
+      startButton.style.display = "none";
+      scoreLive.style.display = "block";
+      countdown(3);
+    };
+
+    function countdown(sec) {
+      timerDisplay.textContent = sec;
+      if (sec > 0) {
+        setTimeout(() => countdown(sec - 1), 1000);
+      } else {
+        timerDisplay.textContent = timeLeft;
+        mainImage.style.display = "inline";
+        leftButton.style.display = "inline-block";
+        rightButton.style.display = "inline-block";
+        startGame();
+      }
+    }
+
+    function startGame() {
+      score = 0;
+      updateLiveScore();
+      timeLeft = 30;
+      timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          endGame();
+        }
+      }, 1000);
+      newPrompt();
+    }
+
+    let currentPrompt = "";
+
+    function newPrompt() {
+      canClick = false;
+      const newPrompt = Math.random() < 0.5 ? "left" : "right";
+      mainImage.classList.remove("flash");
+      void mainImage.offsetWidth;
+      mainImage.classList.add("flash");
+      currentPrompt = newPrompt;
+      mainImage.onload = () => {
+        canClick = true;
+      };
+      mainImage.src = `images/${currentPrompt}.png`;
+    }
+
+    leftButton.onclick = () => handleClick("left");
+    rightButton.onclick = () => handleClick("right");
+
+    function handleClick(side) {
+      if (!canClick) return;
+      if (currentPrompt === side) {
+        score++;
+        updateLiveScore();
+        newPrompt();
+      } else {
+        showShake();
+        canClick = false;
+        leftButton.disabled = true;
+        rightButton.disabled = true;
+        setTimeout(() => {
+          canClick = true;
+          leftButton.disabled = false;
+          rightButton.disabled = false;
+        }, 1000);
+      }
+    }
+
+    function updateLiveScore() {
+      scoreLive.textContent = `正確題數：${score}`;
+    }
+
+    function showShake() {
+  mainImage.classList.remove("shake");
+  void mainImage.offsetWidth;
+  mainImage.classList.add("shake");
+
+  const wrongEffect = document.getElementById("wrong-feedback");
+  wrongEffect.classList.add("show");
+  setTimeout(() => {
+    wrongEffect.classList.remove("show");
+  }, 1000);
+}
+
+    function endGame() {
+  mainImage.style.display = "none";
+  leftButton.style.display = "none";
+  rightButton.style.display = "none";
+  timerDisplay.style.display = "none";
+  scoreLive.style.display = "none";
+  resultScreen.style.display = "block";
+  scoreDisplay.textContent = `得分：${score}`;
+
+  if (score >= 61) {
+    medalImage.src = "images/What.png";
+  } else if (score >= 41) {
+    medalImage.src = "images/Gold.png";
+  } else if (score >= 21) {
+    medalImage.src = "images/sliver.png";
+  } else {
+    medalImage.src = "images/bronze.png";
+  }
+
+  // 加入動畫效果
+  medalImage.classList.remove("show");
+  void medalImage.offsetWidth;
+  medalImage.classList.add("show");
+}
+    
+	
+
+  </script>
+</body>
+</html>
